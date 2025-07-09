@@ -12,8 +12,8 @@ Follow these steps to install the GraspMAS framework:
 
 1. **Clone recursively:**
     ```bash
-    git clone --recurse-submodules git@github.com:ZQuang2202/GraspAgentic.git
-    cd GraspAgentic
+    git clone --recurse-submodules https://github.com/Fsoft-AIC/GraspMAS.git
+    cd GraspMAS
     ```
 
 2. **OpenAI key:** To run the GraspMAS framework, you will need an OpenAI key. This can be done by signing up for an account and then creating a key in account/api-keys. Create a file api.key in the root of this project and store the key in it.
