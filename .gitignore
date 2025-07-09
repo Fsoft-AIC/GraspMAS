@@ -1,0 +1,17 @@
+weights/
+data_test/
+robotic-grasping/
+imgs/
+__pycache__/
+api.key
+*.key
+cached_prompt
+test_model.ipynb
+GraspAnything/
+simulated_demo/
+data-real/
+main_batch.ipynb
+*.json
+images/
+dataset/
+gradio_demo/
