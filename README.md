@@ -1,12 +1,28 @@
 <div align="center"><h1> GraspMAS: Zero-Shot Language-driven Grasp Detection with Multi-Agent System<br>
-<sub><sup><a href="https://www.iros25.org/">IROS 2025</a></sup></sub>
 </h1>
+<p align="center">
+    <a href="https://scholar.google.com/citations?user=F5Fr2ysAAAAJ&hl=vi" style="text-decoration: none;">Quang Nguyen</a> •
+    <a href="https://scholar.google.com/citations?user=t6RXOWgAAAAJ&hl=vi" style="text-decoration: none;">Tri Le</a> •
+    <a href="https://scholar.google.com/citations?user=T_LryjgAAAAJ&hl=en" style="text-decoration: none;">Huy Nghuyen</a> •
+    <a href="https://sites.google.com/tdtu.edu.vn/vongocthieu" style="text-decoration: none;">Thieu Vo</a> •
+    <a href="https://scholar.google.it/citations?user=KUqlbGUAAAAJ&hl=en" style="text-decoration: none;">Tung Ta</a> •
+    <a href="https://scholar.google.com/citations?user=unbPvWAAAAAJ&hl=zh-CN" style="text-decoration: none;">Baoru Huang</a> •
+    <a href="https://scholar.google.com/citations?hl=th&user=qyExc4QAAAAJ&view_op=list_works" style="text-decoration: none;">Minh Vu</a> •
+    <a href="https://www.csc.liv.ac.uk/~anguyen/" style="text-decoration: none;">Anh Nguyen</a>
+</p>
+<h1><sub><sup><a href="https://www.iros25.org/">IROS 2025</a></sup></sub></h1>
 
-[![Website](https://img.shields.io/badge/Website-Demo-fedcba?style=flat-square)](https://zquang2202.github.io/GraspMAS.github.io/) 
+[![Website](https://img.shields.io/badge/Website-Demo-fedcba?style=flat-square)](https://zquang2202.github.io/GraspMAS/) 
 [![arXiv](https://img.shields.io/badge/arXiv-2403.07487-b31b1b?style=flat-square&logo=arxiv)](https://arxiv.org/abs/2506.18448)
 
 </div>
 
+# Introduction
+![image](static/images/method9.jpg)
+In this paper, we introduce GraspMAS, a new multi-agent system framework for language-driven grasp detection. GraspMAS is designed to reason through ambiguities and improve decision-making in real-world scenarios.
+
+![image](static/images/compare_fig.jpg)
+Our method consistently produces more plausible grasp poses than existing methods.
 # Installation
 Follow these steps to install the GraspMAS framework:
 
@@ -54,6 +70,9 @@ python main_simple.py \
 If you want to customize tools or model hyperparameters and configurations, please refer to **`image_patch.py`**. We have only developed sufficient tools for language-driven grasp detection. The GraspMAS framework heavily depends on the effectiveness of pretrained models as tools, so results may be biased. Feel free to add or remove any pretrained models related to image or video processing, including any up-to-date models. Note that some models, such as BLIP or VLM, may require significant GPU memory.
 
 # Maniskill Demo with GraspMAS
+<p align="center">
+    <img src="static/images/robot_exp.jpg" alt="image" />
+</p>
 
 We provide the notebook demo **`Maniskill_demo.ipynb`** for simulating language-driven grasp detection on the ManiSkill simulator. The simulation runs in a tabletop environment using a Panda robot arm equipped with a wrist camera.
 
