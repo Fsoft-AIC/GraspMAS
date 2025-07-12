@@ -18,10 +18,11 @@
 </div>
 
 # Introduction
-![image](static/images/method9.jpg)
+![image](static/method9.jpg)
 In this paper, we introduce GraspMAS, a new multi-agent system framework for language-driven grasp detection. GraspMAS is designed to reason through ambiguities and improve decision-making in real-world scenarios.
 
-![image](static/images/compare_fig.jpg)
+![image](static/compare_fig.jpg)
+
 Our method consistently produces more plausible grasp poses than existing methods.
 # Installation
 Follow these steps to install the GraspMAS framework:
@@ -71,7 +72,7 @@ If you want to customize tools or model hyperparameters and configurations, plea
 
 # Maniskill Demo with GraspMAS
 <p align="center">
-    <img src="static/images/robot_exp.jpg" alt="image" />
+    <img src="static/robot_exp.jpg" alt="image" />
 </p>
 
 We provide the notebook demo **`Maniskill_demo.ipynb`** for simulating language-driven grasp detection on the ManiSkill simulator. The simulation runs in a tabletop environment using a Panda robot arm equipped with a wrist camera.
