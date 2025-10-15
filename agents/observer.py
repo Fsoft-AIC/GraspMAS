@@ -1,3 +1,4 @@
+import json
 import os
 import time
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import torch
 import base64
 from PIL import Image
 from .llm import OpenAILLM
-from prompt import observer_prompt
+from agents.prompt import observer_prompt
 from pathlib import Path
 
 def encode_image(image_path):
@@ -23,16 +24,16 @@ class Observer:
         self.thought = None
         self.llm = llm
 
-    async def __call__(self, execute_results: Union[str, Path], image_path: Path, **kwargs) -> Any:
-        if isinstance(execute_results, str):
-            observer_prompt1 = self.observer_prompt.OBSERVER.format(results=execute_results)
-            base64_image = encode_image(image_path)
-        elif isinstance(execute_results, Path):
-            observer_prompt1 = observer_prompt.OBSERVER.format(results=None)
-            base64_image = encode_image('imgs/grasp_pose_visualization.png')
-        else:
-            observer_prompt1 = observer_prompt.OBSERVER.format(results=None)
-            base64_image = encode_image(image_path)
+    async def __call__(self, execute_results: dict, query: str) -> Any:
+        try:
+            results_str = json.dumps(execute_results, indent=2, default=str)
+        except Exception:
+            results_str = str(execute_results)
+        # print(results_str)
+        img_path = execute_results.get("image")
+        base64_image = encode_image(img_path)
+
+        observer_prompt1 = self.observer_prompt.OBSERVER.format(results=results_str, user_query=query)
 
         content_message = [
             {
@@ -62,5 +63,12 @@ class Observer:
             max_tokens=self.max_tokens,
             stop=["\"\"\""]
         )
-        observation = response.choices[0].message.content.split("<observation>")[1].split("</observation>")[0].strip()
-        return observation
+        # observation = response.choices[0].message.content.split("<observation>")[1].split("</observation>")[0].strip()
+        raw_text = response.choices[0].message.content or ""
+        # Extract observation block
+        if "<observation>" in raw_text and "</observation>" in raw_text:
+            observation = raw_text.split("<observation>")[1].split("</observation>")[0].strip()
+        else:
+            observation = raw_text.strip()
+        
+        return json.loads(observation)

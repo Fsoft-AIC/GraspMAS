@@ -6,12 +6,12 @@ import torch
 import base64
 from PIL import Image
 from .llm import OpenAILLM
-from prompt import coder_prompt
+from agents.prompt import coder_prompt
 
 
 class Coder:
     def __init__(self, coder_prompt: coder_prompt, llm: OpenAILLM, model_name="gpt-4o", max_tokens=1000,
-                 temperature=0, top_p=1.0, frequency_penalty=0.0, presence_penalty=2.0):
+                 temperature=0.1, top_p=1.0, frequency_penalty=0.0, presence_penalty=2.0):
         super().__init__()
         self.model_name = model_name
         self.max_tokens = max_tokens

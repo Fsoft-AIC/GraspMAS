@@ -1,7 +1,7 @@
 import os
 import time
 from .llm import OpenAILLM
-from prompt import planner_prompt_v4
+from agents.prompt import planner_prompt
 import matplotlib.pyplot as plt
 from typing import Any, Dict, Iterator, List, Optional, Sequence, Union, cast
 import torch
@@ -9,12 +9,12 @@ import base64
 from PIL import Image
 
 class Planner:
-    def __init__(self, planner_prompt: planner_prompt_v4, llm: OpenAILLM, model_name="gpt-4o", max_tokens=1000):
+    def __init__(self, planner_prompt: planner_prompt, llm: OpenAILLM, model_name="gpt-4o", max_tokens=1000):
         super().__init__()
         self.model_name = model_name
         self.max_tokens = max_tokens
         self.planner_prompt = planner_prompt
-        self.example_planner = planner_prompt.EXAMPLES_PLANNER_1
+        self.example_planner = planner_prompt.EXAMPLES_PLANNER
         self.plan = None
         self.thought = None
         self.llm = llm
@@ -29,8 +29,10 @@ class Planner:
         ]
                 
         response = await self.llm.client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=input_message_planner,
+            temperature=0.8,
+            top_p=0.9,
             max_tokens=1000,
             stop=["\"\"\""])
 

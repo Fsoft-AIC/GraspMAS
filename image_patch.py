@@ -23,13 +23,12 @@ from vlpart.vlpart import build_vlpart
 import detectron2.data.transforms as T
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
-query_image_path = os.path.join(BASE_PATH, "imgs/query_image.png")
 device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
 ## GroundingDINO
 BOX_TRESHOLD = 0.35
 TEXT_TRESHOLD = 0.25
-THRESHOLD = 0.3
+THRESHOLD = 0.4
 detector_id = 'IDEA-Research/grounding-dino-tiny'
 # detector_id = 'IDEA-Research/grounding-dino-base'
 object_detector = pipeline(model=detector_id, task="zero-shot-object-detection", device=device)
@@ -49,7 +48,7 @@ vlpart_checkpoint = 'weights/swinbase_part_0a0000.pth'
 # vlpart_checkpoint = 'weights/swinbase_cascade_lvis_paco_pascalpart_partimagenet.pth'
 vlpart = build_vlpart(checkpoint=vlpart_checkpoint)
 vlpart.to(device=device)
-THRESHOLD_VLPART = 0.4
+THRESHOLD_VLPART = 0.3
 
 ## BLIP2 model
 blip_processor = Blip2Processor.from_pretrained("Salesforce/blip2-flan-t5-xl")
@@ -198,7 +197,7 @@ class ImagePatch:
 
     def __init__(self, image: Image.Image | torch.Tensor | np.ndarray, left: int | None = None, lower: int | None = None,
                  right: int | None = None, upper: int | None = None, parent_left=0, parent_lower=0, queues=None,
-                 parent_img_patch=None, mask = None):
+                 parent_img_patch=None, mask = None, name=""):
         """Initializes an ImagePatch object by cropping the image at the given coordinates and stores the coordinates as
         attributes. If no coordinates are provided, the image is left unmodified, and the coordinates are set to the
         dimensions of the image.
@@ -277,6 +276,11 @@ class ImagePatch:
         self.original_width = image.shape[2]
         self.original_height = image.shape[1]
 
+        if not name:
+            self.query_image_path = os.path.join(BASE_PATH, f"imgs/query_image.png")
+        else:
+            self.query_image_path = os.path.join(BASE_PATH, f"imgs/query_image_{name}.png")
+        self.PIL_img.save(self.query_image_path,"PNG")
         plt.imshow(self.PIL_img)
         plt.axis('off')
 
@@ -321,7 +325,7 @@ class ImagePatch:
             right = min(self.width, int(box[2]) + scale*max_d)
             lower = self.height - min(self.height, int(box[3]) + scale*max_d)
             upper = self.height - max(0, int(box[1]) - scale*max_d)
-            obj = self.crop(left, lower, right, upper, mask=mask)
+            obj = self.crop(left, lower, right, upper, mask=mask, object_name=object_name)
             obj_list.append(obj)
         return obj_list
 
@@ -334,8 +338,7 @@ class ImagePatch:
         """
         prompt = f"Question: Do you see a {object_name} in the image? Answer (Y/N):"
 
-        self.PIL_img.save(query_image_path,"PNG")
-        with open(query_image_path, "rb") as image_file:
+        with open(self.query_image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
         response = OPENAI_CLIENT.chat.completions.create(
@@ -386,8 +389,7 @@ class ImagePatch:
         # generated_text = blip_processor.batch_decode(generated_ids[0], skip_special_tokens=True)
 
         ## GPT-4o-mini
-        self.PIL_img.save(query_image_path,"PNG")
-        with open(query_image_path, "rb") as image_file:
+        with open(self.query_image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
         response = OPENAI_CLIENT.chat.completions.create(
             model="gpt-4o-mini",
@@ -433,8 +435,7 @@ class ImagePatch:
 #         return generated_text
 
         ### GPT-4o-mini
-        self.PIL_img.save(query_image_path,"PNG")
-        with open(query_image_path, "rb") as image_file:
+        with open(self.query_image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
         headers = {
@@ -532,7 +533,7 @@ class ImagePatch:
         """
         return self.left <= right and self.right >= left and self.lower <= upper and self.upper >= lower
 
-    def crop(self, left: int, lower: int, right: int, upper: int, mask) -> ImagePatch:
+    def crop(self, left: int, lower: int, right: int, upper: int, mask, object_name) -> ImagePatch:
         """Returns a new ImagePatch containing a crop of the original image at the given coordinates.
         Parameters
         ----------
@@ -556,7 +557,7 @@ class ImagePatch:
         right = int(right)
         upper = int(upper)
         return ImagePatch(self.cropped_image, left, lower, right, upper, self.left, self.lower, queues=self.queues,
-                          parent_img_patch=self, mask = mask)
+                          parent_img_patch=self, mask = mask, name=object_name)
 
 
     def llm_query(self, question, context=None, long_answer=True, queues=None):
@@ -569,8 +570,7 @@ class ImagePatch:
         """
         # query = question.format(object_name)
         # self.PIL_img.save(img_path,"PNG")
-        self.original_img.save(query_image_path,"PNG")
-        with open(query_image_path, "rb") as image_file:
+        with open(self.query_image_path, "rb") as image_file:
             base64_image = base64.b64encode(image_file.read()).decode('utf-8')
 
         response = OPENAI_CLIENT.chat.completions.create(
@@ -682,7 +682,7 @@ class ImagePatch:
                 filter_boxes.append(boxes[obj_ind])
                 filter_classes.append(classes[obj_ind])
         if len(filter_boxes) == 0:
-            return self.crop(0, 0, self.width, self.height, mask=self.mask) #return the object ifself
+            return self.crop(0, 0, self.width, self.height, mask=self.mask, object_name=f"{object_name}_{part_name}") #return the object ifself
         inputs = segmentor_processor(images=image_np, input_boxes=[[filter_boxes]], return_tensors="pt").to(device)
 
         outputs = segmentator(**inputs)
@@ -697,7 +697,7 @@ class ImagePatch:
         mask_original = np.zeros_like(self.mask)
         mask_original[self.original_height-self.upper:self.original_height-self.lower, self.left:self.right] = masks
         left, lower, right, upper = map(int, filter_boxes[0])
-        obj = self.crop(left, self.height-upper, right, self.height-lower, mask=mask_original)
+        obj = self.crop(left, self.height-upper, right, self.height-lower, mask=mask_original, object_name=f"{object_name}_{part_name}")
         return obj
         
     def grasp_detection(self, object_patch):

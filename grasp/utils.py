@@ -35,5 +35,6 @@ def visualize_grasp_pose(image, grasp_pose, save_folder='imgs/'):
     plt.axis('off')
     os.makedirs(save_folder, exist_ok=True)
     output_path =  os.path.join(save_folder, f"grasp_pose_visualization.png")
-    plt.savefig(output_path)
+    cv2.imwrite(output_path, cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+    # plt.savefig(output_path, bbox_inches='tight')
     return Path(output_path)
